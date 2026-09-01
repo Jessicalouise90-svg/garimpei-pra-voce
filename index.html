@@ -67,10 +67,20 @@ function restore(){
   }catch(e){}
 }
 
+function getLoja(link){
+  const l=link.toLowerCase();
+  if(l.includes("amazon")) return "Amazon";
+  if(l.includes("shopee")) return "Shopee";
+  if(l.includes("mercadolivre") || l.includes("mercadolibre")) return "Mercado Livre";
+  if(l.includes("magazineluiza") || l.includes("magalu")) return "Magalu";
+  if(l.includes("tiktok")) return "TikTok Shop";
+  return "Loja";
+}
 async function makeOfferImage(){
   const name=$("name").value.trim()||"NOME DO PRODUTO";
   const old=money($("old").value), price=money($("price").value);
   const link=$("link").value.trim();
+  const loja=getLoja(link);
   const pct=old>0&&price>0&&price<old?Math.round((1-price/old)*100):0;
 
   const W=1200, H=1500, pad=70;
@@ -112,7 +122,7 @@ async function makeOfferImage(){
   x.fillText("🛒 COMPRE AQUI ➡️",pad+28,1133);
 
   x.fillStyle="#54df96"; x.font="700 25px -apple-system,BlinkMacSystemFont,Arial,sans-serif";
-  const linkLines=wrapText(x,link||"Seu link da Amazon",W-pad*2,25);
+  const linkLines=wrapText(x,link||"Seu link da loja",W-pad*2,25);
   linkLines.slice(0,2).forEach((line,i)=>x.fillText(line,pad,1210+i*34));
 
   x.strokeStyle="#444"; x.lineWidth=2; x.beginPath(); x.moveTo(pad,1290); x.lineTo(W-pad,1290); x.stroke();
