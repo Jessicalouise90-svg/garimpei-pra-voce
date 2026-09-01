@@ -141,7 +141,7 @@ $("makeImage").onclick=async()=>{
 };
 $("shareWhatsApp").onclick=async()=>{
   if(!lastImageBlob) lastImageBlob=await makeOfferImage();
-  const file=new File([lastImageBlob],"garimpei-oferta.png",{type:"image/png"});
+  const file=new File([await fetch(photoData).then(r=>r.blob())],"produto.jpg",{type:"image/jpeg"});
   const text=$("output").value||"";
   if(navigator.canShare && navigator.canShare({files:[file]})){
     try{await navigator.share({text,files:[file],title:"Oferta Garimpei pra Você"});return}catch(e){}
