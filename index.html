@@ -179,8 +179,6 @@ function esc(s){return s.replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt
 $("generate").onclick=()=>render();
 $("save").onclick=()=>save();
 $("copy").onclick=async()=>{if(!$("output").value)render();try{await navigator.clipboard.writeText($("output").value);$("status").textContent="✓ Texto copiado";$("status").className="status saved"}catch(e){$("output").select();document.execCommand("copy");}};
-$("clear").onclick=()=>{if(!confirm("Apagar o rascunho atual?"))return;localStorage.removeItem(KEY);location.reload()};
-["link","name","old","price"].forEach(id=>$ (id).addEventListener("input",()=>{clearTimeout(window._save);window._save=setTimeout(()=>save(true),200)}));
 $("photo").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{photoData=r.result;render()};r.readAsDataURL(f)};
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")save(true)});
 window.addEventListener("pagehide",()=>save(true));
