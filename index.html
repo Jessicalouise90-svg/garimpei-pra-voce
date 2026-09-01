@@ -180,7 +180,7 @@ $("generate").onclick=()=>render();
 $("save").onclick=()=>save();
 $("copy").onclick=async()=>{if(!$("output").value)render();try{await navigator.clipboard.writeText($("output").value);$("status").textContent="✓ Texto copiado";$("status").className="status saved"}catch(e){$("output").select();document.execCommand("copy");}};
 $("photo").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{photoData=r.result;render()};r.readAsDataURL(f)};
-$("clear").onclick=()=>{localStorage.clear();location.reload()};
+$("clear").onclick=()=>{localStorage.clear();document.querySelectorAll("input,textarea").forEach(e=>e.value="");$("preview").innerHTML="";$("output").innerHTML="";};
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")save(true)});
 window.addEventListener("pagehide",()=>save(true));
 restore();
