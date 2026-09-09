@@ -17,10 +17,10 @@
 <section class="card">
   <h2>🛍️ Sua oferta</h2>
 
-  <label class="photo-box">
+  <label class="photo-box" id="photoBox">
     <input id="photo" type="file" accept="image/*">
     <span id="photoText">📷 Toque para escolher a foto</span>
-    <img id="photoPreview" alt="">
+    <img id="photoPreview" alt="Foto escolhida">
   </label>
 
   <label>Nome do produto
@@ -44,23 +44,21 @@
     <h3>✨ Extras — opcionais</h3>
     <label class="toggle"><input id="couponOn" type="checkbox"><span>🎟️ Adicionar cupom</span></label>
     <input id="coupon" class="extra" type="text" placeholder="Código do cupom" disabled>
-
     <label class="toggle"><input id="pixOn" type="checkbox"><span>Adicionar preço no PIX</span></label>
     <input id="pix" class="extra" type="text" inputmode="decimal" placeholder="R$ 74,90" disabled>
   </div>
 
-  <button id="generate" class="primary">GERAR PRÉVIA ✨</button>
+  <button id="generate" type="button" class="primary">GERAR PRÉVIA ✨</button>
   <p id="error" class="error"></p>
 </section>
 
-<section class="preview-card">
+<section class="preview-card" id="previewSection">
   <div class="preview-head"><h2>Prévia</h2><span>FOTO ORIGINAL</span></div>
-
   <div id="art" class="art">
+    <div id="emptyPreview">A foto do produto aparecerá aqui</div>
     <img id="artImage" alt="Prévia da foto do produto">
   </div>
-
-  <button id="whatsapp" class="secondary">📲 ENVIAR PARA WHATSAPP</button>
+  <button id="whatsapp" type="button" class="secondary">📲 ENVIAR PARA WHATSAPP</button>
   <p class="hint">A foto enviada para o WhatsApp é somente a foto que você escolheu. As informações da oferta vão na mensagem.</p>
 </section>
 </main>

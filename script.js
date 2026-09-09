@@ -1,17 +1,20 @@
 const $=id=>document.getElementById(id);
-let photoData="";
+let photoFile=null;
+let photoUrl="";
 
 $("photo").addEventListener("change",e=>{
-  const f=e.target.files[0];
+  const f=e.target.files && e.target.files[0];
   if(!f)return;
-  const r=new FileReader();
-  r.onload=()=>{
-    photoData=r.result;
-    $("photoPreview").src=photoData;
-    $("artImage").src=photoData;
-    $("photo").closest(".photo-box").classList.add("has-image");
-  };
-  r.readAsDataURL(f);
+  photoFile=f;
+  if(photoUrl)URL.revokeObjectURL(photoUrl);
+  photoUrl=URL.createObjectURL(f);
+
+  $("photoPreview").src=photoUrl;
+  $("photoBox").classList.add("has-image");
+
+  // Prepare the exact same original photo for the preview.
+  $("artImage").src=photoUrl;
+  $("art").classList.add("has-image");
 });
 
 function toggle(check,input){
@@ -25,11 +28,35 @@ toggle("pixOn","pix");
 
 function money(v){
   if(!v)return "";
-  v=v.replace(/[^\d,.-]/g,"").replace(/\./g,"").replace(",",".");
-  const n=Number(v);
-  if(!isFinite(n))return "";
+  let s=String(v).trim().replace(/[^\d,.-]/g,"");
+  if(s.includes(",")&&s.includes("."))s=s.replace(/\./g,"").replace(",",".");
+  else s=s.replace(",",".");
+  const n=Number(s);
+  if(!Number.isFinite(n))return "";
   return n.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
 }
+
+function valid(){
+  $("error").textContent="";
+  if(!photoFile){$("error").textContent="Escolha uma foto do produto.";return false}
+  if(!$("name").value.trim()){$("error").textContent="Digite o nome do produto.";return false}
+  if(!money($("price").value)){$("error").textContent="Digite o preço atual.";return false}
+  const link=$("link").value.trim();
+  if(!link){$("error").textContent="Cole o link do produto.";return false}
+  if(!/^https?:\/\//i.test(link)){$("error").textContent="O link deve começar com https://";return false}
+  return true;
+}
+
+$("generate").addEventListener("click",()=>{
+  if(!valid())return;
+
+  // The preview is ONLY the selected photo. No text is drawn on it.
+  if(!photoUrl)photoUrl=URL.createObjectURL(photoFile);
+  $("artImage").src=photoUrl;
+  $("art").classList.add("has-image");
+
+  setTimeout(()=>$("previewSection").scrollIntoView({behavior:"smooth",block:"center"}),80);
+});
 
 function buildMessage(){
   const name=$("name").value.trim();
@@ -40,63 +67,28 @@ function buildMessage(){
   const link=$("link").value.trim();
 
   let text=`🔥 ${name}\n`;
-  if(old) text+=`De ${old} por ${price}\n`;
-  else text+=`💰 ${price}\n`;
-  if($("couponOn").checked && coupon) text+=`🎟️ CUPOM: ${coupon}\n`;
-  if($("pixOn").checked && pix) text+=`💳 PREÇO NO PIX: ${pix}\n`;
+  if(old)text+=`De ${old} por ${price}\n`;else text+=`💰 ${price}\n`;
+  if($("couponOn").checked&&coupon)text+=`🎟️ CUPOM: ${coupon}\n`;
+  if($("pixOn").checked&&pix)text+=`💳 PREÇO NO PIX: ${pix}\n`;
   text+=`🛒 COMPRE AQUI: ${link}`;
   return text;
 }
 
-$("generate").onclick=()=>{
-  $("error").textContent="";
-  const name=$("name").value.trim();
-  const link=$("link").value.trim();
-  const price=money($("price").value);
-
-  if(!name){$("error").textContent="Digite o nome do produto.";return}
-  if(!price){$("error").textContent="Digite o preço atual.";return}
-  if(!photoData){$("error").textContent="Escolha uma foto do produto.";return}
-  if(!link){$("error").textContent="Cole o link do produto.";return}
-  if(!/^https?:\/\//i.test(link)){$("error").textContent="O link deve começar com https://";return}
-
-  $("artImage").src=photoData;
-  $("art").scrollIntoView({behavior:"smooth",block:"center"});
-};
-
-$("whatsapp").onclick=async()=>{
-  $("error").textContent="";
-  const link=$("link").value.trim();
-  const name=$("name").value.trim();
-  const price=money($("price").value);
-
-  if(!photoData){$("error").textContent="Escolha uma foto do produto.";return}
-  if(!name){$("error").textContent="Digite o nome do produto.";return}
-  if(!price){$("error").textContent="Digite o preço atual.";return}
-  if(!link){$("error").textContent="Cole o link do produto.";return}
-  if(!/^https?:\/\//i.test(link)){$("error").textContent="O link deve começar com https://";return}
-
+$("whatsapp").addEventListener("click",async()=>{
+  if(!valid())return;
   const text=buildMessage();
 
   try{
-    const blob=await (await fetch(photoData)).blob();
-    const file=new File([blob],"produto.png",{type:blob.type||"image/png"});
-
-    // Prefer sharing ONLY the original photo. This prevents the offer information
-    // from being rendered into the image. After the photo share, the user can
-    // paste/send the copied offer text in WhatsApp.
-    if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
-      await navigator.share({files:[file]});
+    if(navigator.share && navigator.canShare && navigator.canShare({files:[photoFile]})){
+      // Share the original file itself — never a generated/annotated image.
+      await navigator.share({files:[photoFile]});
       try{await navigator.clipboard.writeText(text)}catch(_){}
       return;
     }
-
-    // Fallback: copy the complete offer text and open WhatsApp.
-    try{await navigator.clipboard.writeText(text)}catch(_){}
-    window.location.href=`https://wa.me/?text=${encodeURIComponent(text)}`;
   }catch(err){
-    if(err && err.name==="AbortError")return;
-    try{await navigator.clipboard.writeText(text)}catch(_){}
-    window.location.href=`https://wa.me/?text=${encodeURIComponent(text)}`;
+    if(err&&err.name==="AbortError")return;
   }
-};
+
+  try{await navigator.clipboard.writeText(text)}catch(_){}
+  window.location.href=`https://wa.me/?text=${encodeURIComponent(text)}`;
+});
