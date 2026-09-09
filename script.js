@@ -33,16 +33,27 @@ async function renderArt(){
   ctx.fillStyle="#f7f3e9";ctx.fillRect(0,0,1080,1080);
   ctx.fillStyle="#0d6b4f";ctx.fillRect(0,0,1080,65);ctx.fillStyle="#fff";ctx.font="900 34px Arial";ctx.textAlign="center";ctx.fillText("ACHADINHO DO DIA 🛍️",540,44);
   const img=$("artImage");await new Promise(r=>{if(img.complete)r();else img.onload=r});
-  const areaTop=65,areaH=485,iw=img.naturalWidth,ih=img.naturalHeight,sc=Math.min(1000/iw,470/ih),w=iw*sc,h=ih*sc;ctx.drawImage(img,(1080-w)/2,areaTop+(areaH-h)/2,w,h);
+  const areaTop=65,areaH=455,iw=img.naturalWidth,ih=img.naturalHeight,sc=Math.min(1000/iw,440/ih),w=iw*sc,h=ih*sc;ctx.drawImage(img,(1080-w)/2,areaTop+(areaH-h)/2,w,h);
+
+  const productName=$("artName").textContent.trim();
   ctx.textAlign="center";ctx.fillStyle="#17352b";
-  let nameSize=40;while(nameSize>24){ctx.font=`900 ${nameSize}px Arial`;if(measureWrap(ctx,$("artName").textContent,900).length<=3)break;nameSize-=2}
-  wrap(ctx,$("artName").textContent,540,610,900,nameSize+8,3);
+  let nameSize=34;
+  while(nameSize>20){
+    ctx.font=`900 ${nameSize}px Arial`;
+    if(measureWrap(ctx,productName,900).length<=3)break;
+    nameSize-=2;
+  }
+  // Keep the product name inside a fixed area, safely above the prices.
+  wrap(ctx,productName,540,575,900,nameSize+8,3);
+
   const current=$("prices").querySelector(".current")?.textContent||"",old=$("prices").querySelector(".old")?.textContent||"";
-  if(old){ctx.fillStyle="#8b948f";ctx.font="24px Arial";ctx.fillText(old,450,790);ctx.strokeStyle="#8b948f";ctx.beginPath();ctx.moveTo(390,782);ctx.lineTo(510,782);ctx.stroke()}
-  ctx.fillStyle="#0d6b4f";ctx.font="900 62px Arial";ctx.fillText(current,650,795);
-  let y=850;ctx.font="900 25px Arial";ctx.fillStyle="#0d6b4f";for(const b of $("extras").querySelectorAll(".badge")){ctx.fillText(b.textContent,540,y);y+=38}
-  ctx.fillStyle="#0d6b4f";ctx.beginPath();ctx.roundRect(390,925,300,60,30);ctx.fill();ctx.fillStyle="#fff";ctx.font="900 25px Arial";ctx.fillText("VER OFERTA →",540,963);
-  ctx.fillStyle="#718078";ctx.font="800 18px Arial";ctx.fillText("Garimpei pra Você",540,1018);
+  if(old){ctx.fillStyle="#8b948f";ctx.font="24px Arial";ctx.fillText(old,410,805);ctx.strokeStyle="#8b948f";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(350,797);ctx.lineTo(470,797);ctx.stroke()}
+  ctx.fillStyle="#0d6b4f";ctx.font="900 62px Arial";ctx.fillText(current,680,810);
+
+  let y=865;ctx.font="900 25px Arial";ctx.fillStyle="#0d6b4f";
+  for(const b of $("extras").querySelectorAll(".badge")){ctx.fillText(b.textContent,540,y);y+=38}
+  ctx.fillStyle="#0d6b4f";ctx.beginPath();ctx.roundRect(390,945,300,60,30);ctx.fill();ctx.fillStyle="#fff";ctx.font="900 25px Arial";ctx.fillText("VER OFERTA →",540,983);
+  ctx.fillStyle="#718078";ctx.font="800 18px Arial";ctx.fillText("Garimpei pra Você",540,1040);
   return canvas.toDataURL("image/png");
 }
 function measureWrap(ctx,text,maxWidth){const words=text.split(/\s+/),lines=[];let line="";for(const w of words){const test=line?line+" "+w:w;if(ctx.measureText(test).width>maxWidth&&line){lines.push(line);line=w}else line=test}if(line)lines.push(line);return lines}
@@ -50,21 +61,22 @@ function wrap(ctx,text,x,y,maxWidth,lineH,maxLines=3){const lines=measureWrap(ct
 
 $("whatsapp").onclick=async()=>{
   $("error").textContent="";
-  if(!lastArtDataUrl){$("error").textContent="Gere a prévia primeiro.";return}
   const link=$("link").value.trim();
+  const name=$("name").value.trim();
+  const price=money($("price").value);
+  const old=money($("oldPrice").value);
+  if(!lastArtDataUrl){$("error").textContent="Gere a prévia primeiro.";return}
   if(!link){$("error").textContent="Cole o link do produto antes de enviar para o WhatsApp.";return}
-  try{
-    const blob=await (await fetch(lastArtDataUrl)).blob();
-    const file=new File([blob],"garimpei-pra-voce.png",{type:"image/png"});
-    const name=$("name").value.trim(),price=money($("price").value),old=money($("oldPrice").value);
-    let text=`🔥 ${name}\n`;
-    if(old)text+=`De ${old} por ${price}\n`;else text+=`💰 ${price}\n`;
-    if($("couponOn").checked&&$("coupon").value.trim())text+=`🎟️ Cupom: ${$("coupon").value.trim()}\n`;
-    if($("pixOn").checked&&money($("pix").value))text+=`💳 PIX: ${money($("pix").value)}\n`;
-    text+=`🛒 Compre aqui: ${link}`;
-    if(navigator.canShare&&navigator.canShare({files:[file]})){
-      await navigator.share({files:[file],text});
-    }else if(navigator.share){await navigator.share({text});}
-    else{alert("Seu navegador não permite compartilhar a imagem diretamente. Use o botão de compartilhamento do iPhone.")}
-  }catch(e){if(e.name!=="AbortError")alert("Não foi possível abrir o compartilhamento. Tente novamente.")}
+  if(!/^https?:\/\//i.test(link)){$("error").textContent="O link deve começar com https://";return}
+
+  let text=`🔥 ${name}\n`;
+  if(old)text+=`De ${old} por ${price}\n`;else text+=`💰 ${price}\n`;
+  if($("couponOn").checked&&$("coupon").value.trim())text+=`🎟️ Cupom: ${$("coupon").value.trim()}\n`;
+  if($("pixOn").checked&&money($("pix").value))text+=`💳 PIX: ${money($("pix").value)}\n`;
+  text+=`🛒 Compre aqui: ${link}`;
+
+  // On iPhone, open WhatsApp directly with the offer text.
+  // The standard WhatsApp web link cannot attach an image automatically; the generated art stays in the preview for the user to share/attach.
+  const waUrl=`https://wa.me/?text=${encodeURIComponent(text)}`;
+  window.location.href=waUrl;
 };
