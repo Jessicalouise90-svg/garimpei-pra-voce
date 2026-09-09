@@ -44,7 +44,7 @@ $("generate").onclick=async()=>{
 
   let x="";
   if($("couponOn").checked&&$("coupon").value.trim())x+=`<span class="badge">🎟️ ${escapeHtml($("coupon").value.trim())}</span>`;
-  if($("pixOn").checked&&money($("pix").value))x+=`<span class="badge">💳 PIX ${money($("pix").value)}</span>`;
+  if($("pixOn").checked&&money($("pix").value))x+=`<span class="badge">PREÇO NO PIX: ${money($("pix").value)}</span>`;
   $("extras").innerHTML=x;
 
   lastArtDataUrl=await renderArt();
@@ -119,8 +119,8 @@ async function renderArt(){
     ctx.fillStyle="#8b948f";
     const oldW=ctx.measureText(old).width;
     ctx.fillText(old,540-18-oldW/2,priceY);
-    ctx.strokeStyle="#8b948f";ctx.lineWidth=2;
-    ctx.beginPath();ctx.moveTo(540-18-oldW/2,priceY-8);ctx.lineTo(540-18+oldW/2,priceY-8);ctx.stroke();
+    ctx.strokeStyle="#8b948f";ctx.lineWidth=5;
+    ctx.beginPath();ctx.moveTo(540-18-oldW/2-4,priceY-13);ctx.lineTo(540-18+oldW/2+4,priceY-13);ctx.stroke();
 
     ctx.font="900 62px Arial";ctx.fillStyle="#0d6b4f";
     ctx.fillText(current,690,priceY);
@@ -151,9 +151,9 @@ async function renderArt(){
   }
 
   ctx.fillStyle="#0d6b4f";
-  ctx.beginPath();ctx.roundRect(390,885,300,62,31);ctx.fill();
-  ctx.fillStyle="#fff";ctx.font="900 25px Arial";
-  ctx.fillText("VER OFERTA →",540,925);
+  ctx.beginPath();ctx.roundRect(330,875,420,76,38);ctx.fill();
+  ctx.fillStyle="#fff";ctx.font="900 31px Arial";
+  ctx.fillText("COMPRE AQUI →",540,923);
 
   ctx.fillStyle="#718078";ctx.font="800 18px Arial";
   ctx.fillText("Garimpei pra Você",540,985);
@@ -161,7 +161,7 @@ async function renderArt(){
   return canvas.toDataURL("image/png");
 }
 
-$("whatsapp").onclick=()=>{
+$("whatsapp").onclick=async()=>{
   $("error").textContent="";
   const link=$("link").value.trim();
   const name=$("name").value.trim();
@@ -175,8 +175,24 @@ $("whatsapp").onclick=()=>{
   let text=`🔥 ${name}\n`;
   if(old)text+=`De ${old} por ${price}\n`;else text+=`💰 ${price}\n`;
   if($("couponOn").checked&&$("coupon").value.trim())text+=`🎟️ Cupom: ${$("coupon").value.trim()}\n`;
-  if($("pixOn").checked&&money($("pix").value))text+=`💳 PIX: ${money($("pix").value)}\n`;
+  if($("pixOn").checked&&money($("pix").value))text+=`💳 PREÇO NO PIX: ${money($("pix").value)}\n`;
   text+=`🛒 Compre aqui: ${link}`;
 
+  try{
+    const blob=await (await fetch(lastArtDataUrl)).blob();
+    const file=new File([blob],"garimpei-oferta.png",{type:"image/png"});
+    if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({files:[file],text});
+      return;
+    }
+    if(navigator.share){
+      await navigator.share({text});
+      return;
+    }
+  }catch(err){
+    if(err && err.name==="AbortError") return;
+  }
+
+  // Fallback: opens WhatsApp with the complete text if image sharing is unavailable.
   window.location.href=`https://wa.me/?text=${encodeURIComponent(text)}`;
 };
