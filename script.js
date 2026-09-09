@@ -67,11 +67,11 @@ function buildMessage(){
   const pix=money($("pix").value);
   const link=$("link").value.trim();
 
-  let text=`🔥 ${name}\n`;
-  if(old) text+=`De ~${old}~ por ${price}\n`;
-  else text+=`💰 ${price}\n`;
-  if($("couponOn").checked && coupon) text+=`🎟️ CUPOM: ${coupon}\n`;
-  if($("pixOn").checked && pix) text+=`💳 PREÇO NO PIX: ${pix}\n`;
+  let text=`🔥 ${name}\n\n`;
+  if(old) text+=`De ~${old}~ por ${price}\n\n`;
+  else text+=`💰 ${price}\n\n`;
+  if($("couponOn").checked && coupon) text+=`🎟️ CUPOM: ${coupon}\n\n`;
+  if($("pixOn").checked && pix) text+=`💳 PREÇO NO PIX: ${pix}\n\n`;
   text+=`🛒 COMPRE AQUI: ${link}`;
   return text;
 }
