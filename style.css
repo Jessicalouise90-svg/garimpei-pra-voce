@@ -52,3 +52,6 @@ small{font-weight:500;color:var(--muted)}
 .brand{font-size:clamp(9px,1.8vw,13px);font-weight:800;color:#718078;margin-top:7px}
 .hint{font-size:11px;color:var(--muted);text-align:center;line-height:1.4;margin:10px 5px 0}
 @media(max-width:500px){.grid{grid-template-columns:1fr}.app{padding:14px 12px 30px}.card,.preview-card{padding:15px;border-radius:21px}}
+
+.photo-only{height:100%!important;padding:0!important;background:#fff!important}
+.photo-only img{width:100%!important;height:100%!important;object-fit:contain!important}

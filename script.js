@@ -84,80 +84,22 @@ function drawCenteredLines(ctx,lines,x,startY,lineH){
 
 async function renderArt(){
   const canvas=document.createElement("canvas");
-  canvas.width=1080;canvas.height=1080;
+  canvas.width=1080; canvas.height=1080;
   const ctx=canvas.getContext("2d");
-
-  ctx.fillStyle="#f7f3e9";ctx.fillRect(0,0,1080,1080);
-
-  ctx.fillStyle="#0d6b4f";ctx.fillRect(0,0,1080,70);
-  ctx.fillStyle="#fff";ctx.textAlign="center";ctx.font="900 34px Arial";
-  ctx.fillText("ACHADINHO DO DIA 🛍️",540,46);
+  ctx.fillStyle="#ffffff";
+  ctx.fillRect(0,0,1080,1080);
 
   const img=$("artImage");
-  await new Promise(r=>{if(img.complete)r();else img.onload=r});
+  await new Promise(r=>{
+    if(img.complete && img.naturalWidth) r();
+    else img.onload=r;
+  });
 
-  const areaTop=70,areaH=410,iw=img.naturalWidth||1,ih=img.naturalHeight||1;
-  const sc=Math.min(900/iw,370/ih),w=iw*sc,h=ih*sc;
-  ctx.drawImage(img,(1080-w)/2,areaTop+(areaH-h)/2,w,h);
-
-  const productName=$("artName").textContent.trim();
-  const nameSize=fitFont(ctx,productName,900,34,22);
-  ctx.fillStyle="#17352b";
-  ctx.font=`900 ${nameSize}px Arial`;
-  const lines=wrapLines(ctx,productName,900,2);
-  drawCenteredLines(ctx,lines,540,535,nameSize*1.12);
-
-  const current=$("prices").querySelector(".current")?.textContent||"";
-  const old=$("prices").querySelector(".old")?.textContent||"";
-
-  let priceY=650;
-  if(lines.length===2)priceY=675;
-
-  if(old){
-    const oldSize=27;
-    ctx.font=`700 ${oldSize}px Arial`;
-    ctx.fillStyle="#8b948f";
-    const oldW=ctx.measureText(old).width;
-    ctx.fillText(old,540-18-oldW/2,priceY);
-    ctx.strokeStyle="#8b948f";ctx.lineWidth=5;
-    ctx.beginPath();ctx.moveTo(540-18-oldW/2-4,priceY-13);ctx.lineTo(540-18+oldW/2+4,priceY-13);ctx.stroke();
-
-    ctx.font="900 62px Arial";ctx.fillStyle="#0d6b4f";
-    ctx.fillText(current,690,priceY);
-  }else{
-    ctx.font="900 68px Arial";ctx.fillStyle="#0d6b4f";
-    ctx.fillText(current,540,priceY);
-  }
-
-  const badges=[...$("extras").querySelectorAll(".badge")].map(b=>b.textContent.trim());
-  let y=735;
-  if(badges.length){
-    ctx.font="900 25px Arial";
-    badges.forEach((b,i)=>{
-      const max=850;
-      let s=25;
-      while(s>17){
-        ctx.font=`900 ${s}px Arial`;
-        if(ctx.measureText(b).width<=max)break;
-        s-=1;
-      }
-      const bw=Math.min(ctx.measureText(b).width+36,max+36),bh=44,bx=540-bw/2;
-      ctx.fillStyle="#e2f3e9";
-      ctx.beginPath();ctx.roundRect(bx,y-31,bw,bh,22);ctx.fill();
-      ctx.fillStyle="#0d6b4f";ctx.font=`900 ${s}px Arial`;
-      ctx.fillText(b,540,y);
-      y+=58;
-    });
-  }
-
-  ctx.fillStyle="#0d6b4f";
-  ctx.beginPath();ctx.roundRect(330,875,420,76,38);ctx.fill();
-  ctx.fillStyle="#fff";ctx.font="900 31px Arial";
-  ctx.fillText("COMPRE AQUI →",540,923);
-
-  ctx.fillStyle="#718078";ctx.font="800 18px Arial";
-  ctx.fillText("Garimpei pra Você",540,985);
-
+  const iw=img.naturalWidth||1, ih=img.naturalHeight||1;
+  // Preserve the original photo without adding any offer text, badges or overlays.
+  const scale=Math.min(1080/iw,1080/ih);
+  const w=iw*scale, h=ih*scale;
+  ctx.drawImage(img,(1080-w)/2,(1080-h)/2,w,h);
   return canvas.toDataURL("image/png");
 }
 
@@ -168,19 +110,24 @@ $("whatsapp").onclick=async()=>{
   const price=money($("price").value);
   const old=money($("oldPrice").value);
 
-  if(!lastArtDataUrl){$("error").textContent="Gere a prévia primeiro.";return}
+  if(!photoData){$("error").textContent="Escolha uma foto do produto.";return}
+  if(!name){$("error").textContent="Digite o nome do produto.";return}
+  if(!price){$("error").textContent="Digite o preço atual.";return}
   if(!link){$("error").textContent="Cole o link do produto antes de enviar para o WhatsApp.";return}
   if(!/^https?:\/\//i.test(link)){$("error").textContent="O link deve começar com https://";return}
 
   let text=`🔥 ${name}\n`;
-  if(old)text+=`De ${old} por ${price}\n`;else text+=`💰 ${price}\n`;
-  if($("couponOn").checked&&$("coupon").value.trim())text+=`🎟️ Cupom: ${$("coupon").value.trim()}\n`;
-  if($("pixOn").checked&&money($("pix").value))text+=`💳 PREÇO NO PIX: ${money($("pix").value)}\n`;
-  text+=`🛒 Compre aqui: ${link}`;
+  if(old) text+=`~De ${old}~ por *${price}*\n`;
+  else text+=`💰 *${price}*\n`;
+  if($("couponOn").checked&&$("coupon").value.trim())
+    text+=`🎟️ *CUPOM:* ${$("coupon").value.trim()}\n`;
+  if($("pixOn").checked&&money($("pix").value))
+    text+=`💳 *PREÇO NO PIX:* ${money($("pix").value)}\n`;
+  text+=`🛒 *COMPRE AQUI:* ${link}`;
 
   try{
-    const blob=await (await fetch(lastArtDataUrl)).blob();
-    const file=new File([blob],"garimpei-oferta.png",{type:"image/png"});
+    const blob=await (await fetch(photoData)).blob();
+    const file=new File([blob],"garimpei-produto.png",{type:blob.type||"image/png"});
     if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
       await navigator.share({files:[file],text});
       return;
@@ -193,6 +140,5 @@ $("whatsapp").onclick=async()=>{
     if(err && err.name==="AbortError") return;
   }
 
-  // Fallback: opens WhatsApp with the complete text if image sharing is unavailable.
   window.location.href=`https://wa.me/?text=${encodeURIComponent(text)}`;
 };
