@@ -11,15 +11,11 @@
   <main class="app">
     <header>
       <div class="logo-mark">G</div>
-      <div>
-        <h1>Garimpei pra Você</h1>
-        <p>Crie sua oferta em poucos segundos ✨</p>
-      </div>
+      <div><h1>Garimpei pra Você</h1><p>Crie sua oferta em poucos segundos ✨</p></div>
     </header>
 
     <section class="card">
       <h2>🛍️ Sua oferta</h2>
-
       <label class="photo-box">
         <input id="photo" type="file" accept="image/*">
         <span id="photoText">📷 Toque para escolher a foto</span>
@@ -29,7 +25,6 @@
       <label>Nome do produto
         <input id="name" type="text" placeholder="Ex.: Air Fryer 5L">
       </label>
-
       <label>Link do produto
         <input id="link" type="url" inputmode="url" placeholder="Cole o link aqui">
       </label>
@@ -45,17 +40,9 @@
 
       <div class="optional">
         <h3>✨ Extras — opcionais</h3>
-
-        <label class="toggle">
-          <input id="couponOn" type="checkbox">
-          <span>🎟️ Adicionar cupom</span>
-        </label>
+        <label class="toggle"><input id="couponOn" type="checkbox"><span>🎟️ Adicionar cupom</span></label>
         <input id="coupon" class="extra" type="text" placeholder="Código do cupom" disabled>
-
-        <label class="toggle">
-          <input id="pixOn" type="checkbox">
-          <span>💳 Adicionar preço no PIX</span>
-        </label>
+        <label class="toggle"><input id="pixOn" type="checkbox"><span>💳 Adicionar preço no PIX</span></label>
         <input id="pix" class="extra" type="text" inputmode="decimal" placeholder="R$ 74,90" disabled>
       </div>
 
@@ -64,11 +51,7 @@
     </section>
 
     <section class="preview-card">
-      <div class="preview-head">
-        <h2>Prévia</h2>
-        <span>1080 × 1080</span>
-      </div>
-
+      <div class="preview-head"><h2>Prévia</h2><span>1080 × 1080</span></div>
       <div id="art" class="art">
         <div class="art-top">ACHADINHO DO DIA 🛍️</div>
         <div class="image-wrap"><img id="artImage" alt=""></div>
@@ -80,12 +63,10 @@
           <div class="brand">Garimpei pra Você</div>
         </div>
       </div>
-
-      <button id="download" class="secondary">⬇️ BAIXAR ARTE</button>
-      <p class="hint">A imagem é criada no próprio celular. Seu link não é enviado para nenhum servidor.</p>
+      <button id="whatsapp" class="secondary">📲 ENVIAR PARA WHATSAPP</button>
+      <p class="hint">A arte é criada no próprio celular. Ao compartilhar, o WhatsApp receberá a imagem e o link da oferta.</p>
     </section>
   </main>
-
   <script src="script.js"></script>
 </body>
 </html>
