@@ -8,13 +8,8 @@ $("photo").addEventListener("change",e=>{
   photoFile=f;
   if(photoUrl)URL.revokeObjectURL(photoUrl);
   photoUrl=URL.createObjectURL(f);
-
   $("photoPreview").src=photoUrl;
   $("photoBox").classList.add("has-image");
-
-  // Prepare the exact same original photo for the preview.
-  $("artImage").src=photoUrl;
-  $("art").classList.add("has-image");
 });
 
 function toggle(check,input){
@@ -39,7 +34,7 @@ function money(v){
 function valid(){
   $("error").textContent="";
   if(!photoFile){$("error").textContent="Escolha uma foto do produto.";return false}
-  if(!$("name").value.trim()){$("error").textContent="Digite o nome do produto.";return false}
+  if(!$('name').value.trim()){$("error").textContent="Digite o nome do produto.";return false}
   if(!money($("price").value)){$("error").textContent="Digite o preço atual.";return false}
   const link=$("link").value.trim();
   if(!link){$("error").textContent="Cole o link do produto.";return false}
@@ -47,15 +42,21 @@ function valid(){
   return true;
 }
 
-$("generate").addEventListener("click",()=>{
-  if(!valid())return;
-
-  // The preview is ONLY the selected photo. No text is drawn on it.
+function updatePreview(){
+  if(!photoFile){$("error").textContent="Escolha uma foto do produto.";return false}
+  if(!money($("price").value)){$("error").textContent="Digite o preço atual.";return false}
+  $("error").textContent="";
   if(!photoUrl)photoUrl=URL.createObjectURL(photoFile);
   $("artImage").src=photoUrl;
   $("art").classList.add("has-image");
+  $("emptyPreview").style.display="none";
+  return true;
+}
 
-  setTimeout(()=>$("previewSection").scrollIntoView({behavior:"smooth",block:"center"}),80);
+$("generate").addEventListener("click",()=>{
+  if(updatePreview()){
+    setTimeout(()=>$("previewSection").scrollIntoView({behavior:"smooth",block:"center"}),80);
+  }
 });
 
 function buildMessage(){
@@ -67,9 +68,10 @@ function buildMessage(){
   const link=$("link").value.trim();
 
   let text=`🔥 ${name}\n`;
-  if(old)text+=`De ${old} por ${price}\n`;else text+=`💰 ${price}\n`;
-  if($("couponOn").checked&&coupon)text+=`🎟️ CUPOM: ${coupon}\n`;
-  if($("pixOn").checked&&pix)text+=`💳 PREÇO NO PIX: ${pix}\n`;
+  if(old) text+=`De ~${old}~ por ${price}\n`;
+  else text+=`💰 ${price}\n`;
+  if($("couponOn").checked && coupon) text+=`🎟️ CUPOM: ${coupon}\n`;
+  if($("pixOn").checked && pix) text+=`💳 PREÇO NO PIX: ${pix}\n`;
   text+=`🛒 COMPRE AQUI: ${link}`;
   return text;
 }
@@ -78,17 +80,18 @@ $("whatsapp").addEventListener("click",async()=>{
   if(!valid())return;
   const text=buildMessage();
 
+  // iPhone/iPad: use the native share sheet with BOTH the original photo and the corrected offer text.
+  // WhatsApp can then receive the photo and caption in the same share action.
   try{
     if(navigator.share && navigator.canShare && navigator.canShare({files:[photoFile]})){
-      // Share the original file itself — never a generated/annotated image.
-      await navigator.share({files:[photoFile]});
-      try{await navigator.clipboard.writeText(text)}catch(_){}
+      await navigator.share({text,files:[photoFile],title:"Garimpei pra Você"});
       return;
     }
   }catch(err){
-    if(err&&err.name==="AbortError")return;
+    if(err && err.name==="AbortError") return;
   }
 
-  try{await navigator.clipboard.writeText(text)}catch(_){}
+  // Fallback: copy the exact message and open WhatsApp with the text filled in.
+  try{await navigator.clipboard.writeText(text)}catch(_){ }
   window.location.href=`https://wa.me/?text=${encodeURIComponent(text)}`;
 });
